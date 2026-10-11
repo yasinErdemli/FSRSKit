@@ -1,5 +1,3 @@
-import Foundation
-
 /// A number the model computes with: `Double` to schedule, or ``Tracked`` to
 /// train, which records each operation so it can be differentiated.
 ///
@@ -53,9 +51,9 @@ func larger<Number: ModelNumber>(_ first: Number, _ second: Number) -> Number {
 extension Double: ModelNumber {
     var value: Double { self }
 
-    func exp() -> Double { Foundation.exp(self) }
-    func log() -> Double { Foundation.log(self) }
-    func pow(_ exponent: Double) -> Double { Foundation.pow(self, exponent) }
+    func exp() -> Double { exponential(self) }
+    func log() -> Double { logarithm(self) }
+    func pow(_ exponent: Double) -> Double { power(self, exponent) }
 
     func clamped(to range: ClosedRange<Double>) -> Double {
         Swift.min(Swift.max(self, range.lowerBound), range.upperBound)

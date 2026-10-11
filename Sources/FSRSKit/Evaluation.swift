@@ -1,5 +1,3 @@
-import Foundation
-
 /// How well parameters predict a learner's reviews: lower is better for both.
 ///
 /// Compare the evaluations of the current and the newly optimized parameters
@@ -27,11 +25,11 @@ extension FSRS {
         var totalWeight = 0.0
         var bins: [Bin: (predicted: Double, actual: Double, count: Double, weight: Double)] = [:]
         for (index, target) in data.targets.enumerated() {
-            let weight = 0.25 + 0.75 * Foundation.pow(Double(index) / last, 3)
+            let weight = 0.25 + 0.75 * power(Double(index) / last, 3)
             let actual = target.recalled ? 1.0 : 0.0
             let predicted = predictions[index]
             let clamped = predicted.clamped(to: 0.0001...0.9999)
-            loss -= weight * (actual * Foundation.log(clamped) + (1 - actual) * Foundation.log(1 - clamped))
+            loss -= weight * (actual * logarithm(clamped) + (1 - actual) * logarithm(1 - clamped))
             totalWeight += weight
 
             let card = data.cards[target.card]
@@ -68,7 +66,7 @@ private struct Bin: Hashable {
 
     init(elapsed: Double, longTermReviews: Int, lapses: Int) {
         func bucket(_ value: Double, base: Double, scale: Double) -> Double {
-            scale * Foundation.pow(base, (Foundation.log(value) / Foundation.log(base)).rounded(.down))
+            scale * power(base, (logarithm(value) / logarithm(base)).rounded(.down))
         }
         interval = Int((bucket(elapsed, base: 3.62, scale: 2.48) * 100).rounded())
         length = Int(bucket(Double(longTermReviews + 1), base: 1.89, scale: 1.99).rounded())

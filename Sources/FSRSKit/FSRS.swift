@@ -1,5 +1,3 @@
-import Foundation
-
 /// The FSRS-7 scheduler for one learner: how well they remember an item, and
 /// when to review it next.
 ///
@@ -60,17 +58,17 @@ public struct FSRS: Sendable, Hashable {
         )
         // Newton's method on the logarithm of the interval, as the reference
         // does; bisection if it doesn't land within 0.001 of the target.
-        let logBounds = Foundation.log(Bounds.shortestInterval)...Foundation.log(Bounds.stability.upperBound)
-        var logInterval = Foundation.log(max(state.stability, state.fastStability, Bounds.shortestInterval))
+        let logBounds = logarithm(Bounds.shortestInterval)...logarithm(Bounds.stability.upperBound)
+        var logInterval = logarithm(max(state.stability, state.fastStability, Bounds.shortestInterval))
         for _ in 0..<7 {
             logInterval = logInterval.clamped(to: logBounds)
-            let interval = Foundation.exp(logInterval).clamped(to: Bounds.shortestInterval...Bounds.stability.upperBound)
+            let interval = exponential(logInterval).clamped(to: Bounds.shortestInterval...Bounds.stability.upperBound)
             let (recall, slope) = recallAndSlope(after: interval, of: state)
             let slopeByLog = min(slope * interval, -1e-12)
             logInterval -= ((recall - target) / slopeByLog).clamped(to: -4...4)
             guard logInterval.isFinite else { return bisectedInterval(for: state, target: target) }
         }
-        let interval = Foundation.exp(logInterval).clamped(to: 0...Bounds.stability.upperBound)
+        let interval = exponential(logInterval).clamped(to: 0...Bounds.stability.upperBound)
         let recall = model.retrievability(after: interval, of: state)
         guard recall.isFinite, abs(recall - target) <= 1e-3 else {
             return bisectedInterval(for: state, target: target)
@@ -102,21 +100,21 @@ public struct FSRS: Sendable, Hashable {
         let fastStability = state.fastStability
         let difficulty = state.difficulty
 
-        let fastDecay = -(w[23] * Foundation.pow(fastStability, w[33] - 0.3)).clamped(to: 0.01...0.95)
-        let fastFactor = Foundation.exp(min(Foundation.log(w[25]) / fastDecay, 60)) - 1
+        let fastDecay = -(w[23] * power(fastStability, w[33] - 0.3)).clamped(to: 0.01...0.95)
+        let fastFactor = exponential(min(logarithm(w[25]) / fastDecay, 60)) - 1
         let fastBase = 1 + fastFactor * (elapsed / fastStability)
-        let fast = Foundation.pow(fastBase, fastDecay)
-        let fastSlope = fastDecay * Foundation.pow(fastBase, fastDecay - 1) * fastFactor / fastStability
+        let fast = power(fastBase, fastDecay)
+        let fastSlope = fastDecay * power(fastBase, fastDecay - 1) * fastFactor / fastStability
 
         let slowDecay = -w[24].clamped(to: 0.01...0.95)
-        let slowFactor = Foundation.pow(w[26], 1 / slowDecay) - 1
-        let timescale = Foundation.exp((difficulty - 5) * (w[32] - 0.3))
+        let slowFactor = power(w[26], 1 / slowDecay) - 1
+        let timescale = exponential((difficulty - 5) * (w[32] - 0.3))
         let slowBase = 1 + slowFactor * timescale * (elapsed / stability)
-        let slow = Foundation.pow(slowBase, slowDecay)
-        let slowSlope = slowDecay * Foundation.pow(slowBase, slowDecay - 1) * slowFactor * timescale / stability
+        let slow = power(slowBase, slowDecay)
+        let slowSlope = slowDecay * power(slowBase, slowDecay - 1) * slowFactor * timescale / stability
 
-        let fastWeight = w[27] * Foundation.pow(fastStability, -w[29])
-        let slowWeight = w[28] * Foundation.pow(stability, w[30]) * Foundation.exp((difficulty - 5) * (w[31] - 0.5))
+        let fastWeight = w[27] * power(fastStability, -w[29])
+        let slowWeight = w[28] * power(stability, w[30]) * exponential((difficulty - 5) * (w[31] - 0.5))
         let weights = max(fastWeight + slowWeight, 1e-9)
         let recall = (fastWeight * fast + slowWeight * slow) / weights
         let slope = (fastWeight * fastSlope + slowWeight * slowSlope) / weights

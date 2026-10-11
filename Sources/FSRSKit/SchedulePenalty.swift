@@ -1,5 +1,3 @@
-import Foundation
-
 /// The reference's scheduling penalties for FSRS-7 (`training_v7.rs`),
 /// optional extra terms in the training loss.
 ///
@@ -88,8 +86,8 @@ enum SchedulePenalty {
         )
         let (recall, slope) = rawRecall(model, after: interval, of: state)
         let slopeByLog = min(slope * interval, -1e-9)
-        let logBounds = Foundation.log(Bounds.shortestInterval)...Foundation.log(longestInterval)
-        return (Foundation.log(interval) - (recall - retention) / slopeByLog).clamped(to: logBounds).exp()
+        let logBounds = logarithm(Bounds.shortestInterval)...logarithm(longestInterval)
+        return (logarithm(interval) - (recall - retention) / slopeByLog).clamped(to: logBounds).exp()
     }
 
     /// Newton's method for the interval, in plain numbers (the reference's
@@ -101,32 +99,32 @@ enum SchedulePenalty {
         difficulty: Double,
         retention: Double
     ) -> Double {
-        let logBounds = Foundation.log(Bounds.shortestInterval)...Foundation.log(longestInterval)
+        let logBounds = logarithm(Bounds.shortestInterval)...logarithm(longestInterval)
         let intervalBounds = Bounds.shortestInterval...longestInterval
-        let fastDecay = -(w[23] * Foundation.pow(fastStability, w[33] - 0.3)).clamped(to: 0.01...0.95)
-        let fastFactor = Foundation.exp(min(Foundation.log(max(w[25], 1e-9)) / fastDecay, 60)) - 1
+        let fastDecay = -(w[23] * power(fastStability, w[33] - 0.3)).clamped(to: 0.01...0.95)
+        let fastFactor = exponential(min(logarithm(max(w[25], 1e-9)) / fastDecay, 60)) - 1
         let fastRate = fastFactor / fastStability
         let slowDecay = -w[24].clamped(to: 0.01...0.95)
-        let slowFactor = Foundation.pow(max(w[26], 1e-9), 1 / slowDecay) - 1
-        let timescale = Foundation.exp((difficulty - 5) * (w[32] - 0.3))
+        let slowFactor = power(max(w[26], 1e-9), 1 / slowDecay) - 1
+        let timescale = exponential((difficulty - 5) * (w[32] - 0.3))
         let slowRate = slowFactor * timescale / stability
-        let fastWeight = w[27] * Foundation.pow(fastStability, -w[29])
-        let slowWeight = w[28] * Foundation.pow(stability, w[30]) * Foundation.exp((difficulty - 5) * (w[31] - 0.5))
+        let fastWeight = w[27] * power(fastStability, -w[29])
+        let slowWeight = w[28] * power(stability, w[30]) * exponential((difficulty - 5) * (w[31] - 0.5))
         let weights = fastWeight + slowWeight
 
-        var logInterval = Foundation.log(max(stability, 1e-10))
+        var logInterval = logarithm(max(stability, 1e-10))
         for _ in 0..<7 {
             logInterval = logInterval.clamped(to: logBounds)
-            let interval = Foundation.exp(logInterval).clamped(to: intervalBounds)
+            let interval = exponential(logInterval).clamped(to: intervalBounds)
             let fastBase = max(fastRate * interval + 1, 1e-9)
             let slowBase = max(slowRate * interval + 1, 1e-9)
-            let recall = (fastWeight * Foundation.pow(fastBase, fastDecay) + slowWeight * Foundation.pow(slowBase, slowDecay)) / weights
-            let fastSlope = fastDecay * Foundation.pow(fastBase, fastDecay - 1) * fastRate
-            let slowSlope = slowDecay * Foundation.pow(slowBase, slowDecay - 1) * slowRate
+            let recall = (fastWeight * power(fastBase, fastDecay) + slowWeight * power(slowBase, slowDecay)) / weights
+            let fastSlope = fastDecay * power(fastBase, fastDecay - 1) * fastRate
+            let slowSlope = slowDecay * power(slowBase, slowDecay - 1) * slowRate
             let slope = (fastWeight * fastSlope + slowWeight * slowSlope) / weights
             logInterval -= (recall - retention) / min(slope * interval, -1e-12)
         }
-        return Foundation.exp(logInterval.clamped(to: logBounds)).clamped(to: intervalBounds)
+        return exponential(logInterval.clamped(to: logBounds)).clamped(to: intervalBounds)
     }
 
     /// The two traces' mixed recall, without the model's final rescaling, as a
@@ -155,8 +153,8 @@ enum SchedulePenalty {
         let weights = (fastWeight + slowWeight).clamped(atLeast: 1e-9)
         let recall = ((fastWeight * fast + slowWeight * slow) / weights).clamped(to: 0...1)
 
-        let fastSlope = fastDecay.value * Foundation.pow(fastBase.value, fastDecay.value - 1) * fastRate.value
-        let slowSlope = slowDecay.value * Foundation.pow(slowBase.value, slowDecay.value - 1) * slowRate.value
+        let fastSlope = fastDecay.value * power(fastBase.value, fastDecay.value - 1) * fastRate.value
+        let slowSlope = slowDecay.value * power(slowBase.value, slowDecay.value - 1) * slowRate.value
         let slope = min((fastWeight.value * fastSlope + slowWeight.value * slowSlope) / weights.value, 0)
         return (recall, slope)
     }

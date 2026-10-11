@@ -1,5 +1,3 @@
-import Foundation
-
 /// Reverse-mode differentiation: the tape records every operation of a
 /// forward pass with its local derivatives, and one sweep backward then gives
 /// the derivative of the result by every parameter.
@@ -159,18 +157,18 @@ struct Tracked: ModelNumber {
     }
 
     func exp() -> Tracked {
-        let result = Foundation.exp(value)
+        let result = exponential(value)
         return unary(result, result)
     }
 
     func log() -> Tracked {
-        unary(Foundation.log(value), 1 / value)
+        unary(logarithm(value), 1 / value)
     }
 
     func pow(_ exponent: Tracked) -> Tracked {
-        let logarithm = Foundation.log(value)
-        let result = Foundation.exp(exponent.value * logarithm)
-        return Self.binary(self, exponent, result, exponent.value * result / value, result * logarithm)
+        let logBase = logarithm(value)
+        let result = exponential(exponent.value * logBase)
+        return Self.binary(self, exponent, result, exponent.value * result / value, result * logBase)
     }
 
     func clamped(to range: ClosedRange<Double>) -> Tracked {

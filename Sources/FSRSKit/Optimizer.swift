@@ -1,4 +1,4 @@
-import Foundation
+import Dispatch
 
 /// Fits FSRS-7's parameters to one learner's reviews.
 ///
@@ -240,7 +240,7 @@ public struct Optimizer: Sendable {
             for row in 1..<card.ratings.count {
                 if card.weights[row] != 0 {
                     let recall = model.retrievability(after: card.elapsed[row], of: state).clamped(to: 1e-5...(1 - 1e-5))
-                    loss -= card.weights[row] * Foundation.log(card.recalled[row] ? recall : 1 - recall)
+                    loss -= card.weights[row] * logarithm(card.recalled[row] ? recall : 1 - recall)
                 }
                 if row + 1 < card.ratings.count {
                     state = model.state(after: state, elapsed: card.elapsed[row], rating: card.ratings[row])
@@ -322,8 +322,8 @@ private struct Adam {
 
     mutating func step(_ parameters: inout [Double], gradient: [Double], learningRate: Double) {
         time += 1
-        let firstCorrection = 1 - Foundation.pow(beta1, time)
-        let secondCorrection = 1 - Foundation.pow(beta2, time)
+        let firstCorrection = 1 - power(beta1, time)
+        let secondCorrection = 1 - power(beta2, time)
         for index in 0..<Parameters.count {
             let g = gradient[index]
             first[index] = first[index] * beta1 + g * (1 - beta1)
@@ -354,9 +354,9 @@ private struct CosineSchedule {
         if count == 0 {
             rate = start
         } else if (count - 1 - steps).truncatingRemainder(dividingBy: 2 * steps) == 0 {
-            rate = start * (1 - cos(.pi / steps)) / 2
+            rate = start * (1 - cosine(.pi / steps)) / 2
         } else {
-            rate = (1 + cos(.pi * count / steps)) / (1 + cos(.pi * (count - 1) / steps)) * rate
+            rate = (1 + cosine(.pi * count / steps)) / (1 + cosine(.pi * (count - 1) / steps)) * rate
         }
         return rate
     }
