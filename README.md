@@ -1,8 +1,10 @@
 # FSRSKit
 
+[![CI](https://github.com/yasinErdemli/FSRSKit/actions/workflows/ci.yml/badge.svg)](https://github.com/yasinErdemli/FSRSKit/actions/workflows/ci.yml)
+
 **FSRS-7 for Swift: the most accurate spaced-repetition scheduler an app can run for each learner, with the optimizer that fits it to them.**
 
-FSRSKit tells you how likely a learner is to remember something right now, and when to review it so they don't forget. It's a port of [fsrs-rs](https://github.com/open-spaced-repetition/fsrs-rs), the reference implementation of [FSRS](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Algorithm), the algorithm in Anki. It's pure Swift with no dependencies, and runs on every Apple platform.
+FSRSKit tells you how likely a learner is to remember something right now, and when to review it so they don't forget. It's a port of [fsrs-rs](https://github.com/open-spaced-repetition/fsrs-rs), the reference implementation of [FSRS](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Algorithm), the algorithm in Anki. It's pure Swift with no dependencies, and runs on every Apple platform and on Linux.
 
 - **FSRS-7**, the newest version. It models a fast and a slow trace of each memory, and takes time in fractional days, so reviews minutes apart, in the same lesson, are predicted as well as reviews weeks apart.
 - **The optimizer** fits FSRS's 34 parameters to one learner's own reviews, on the device. That's where most of FSRS's accuracy comes from, and no other Swift library has it.
@@ -25,10 +27,12 @@ Older versions fall apart on same-day reviews; FSRS-7 was built for them. Among 
 ## Installing
 
 ```swift
-.package(url: "https://github.com/yasinErdemli/FSRSKit", from: "1.0.0"),
+.package(url: "https://github.com/yasinErdemli/FSRSKit", from: "0.1.0"),
 ```
 
-Then add `"FSRSKit"` to your target's dependencies. FSRSKit needs Swift 6.2, and iOS 16, macOS 13, tvOS 16, watchOS 9 or visionOS 1.
+Then add `"FSRSKit"` to your target's dependencies. FSRSKit needs Swift 6.2, and iOS 16, macOS 13, tvOS 16, watchOS 9, visionOS 1 or Linux.
+
+FSRS-7 is on fsrs-rs's main branch but not yet in one of its releases, and its default parameters can still change. FSRSKit stays at 0.x until fsrs-rs releases FSRS-7, so a minor version may change the defaults or the optimizer's results.
 
 ## Scheduling
 
@@ -93,4 +97,4 @@ The model is written once, generic over the kind of number it computes with: `Do
 
 ## License
 
-FSRSKit contains code ported from fsrs-rs, under its BSD 3-Clause License: see [NOTICE.md](NOTICE.md). An app that ships FSRSKit must include that notice in its credits.
+FSRSKit is under the BSD 3-Clause License: see [LICENSE](LICENSE). It contains code ported from fsrs-rs, under fsrs-rs's own BSD 3-Clause License: see [NOTICE.md](NOTICE.md). An app that ships FSRSKit must include both notices in its credits.

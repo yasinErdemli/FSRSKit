@@ -40,5 +40,5 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-An app that ships FSRSKit has to show this notice with its other credits
-(condition 2).
+An app that ships FSRSKit has to show this notice, and FSRSKit's own in
+[LICENSE](LICENSE), with its other credits (condition 2 of each).
