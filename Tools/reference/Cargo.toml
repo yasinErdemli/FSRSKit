@@ -1,0 +1,12 @@
+[package]
+name = "fsrskit-reference"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Writes the values FSRSKit's tests compare against, from the reference implementation."
+
+[dependencies]
+# The reference FSRSKit is a port of. Change the commit, run Tools/make-reference.sh,
+# and the tests show what changed.
+fsrs = { git = "https://github.com/open-spaced-repetition/fsrs-rs", rev = "0a5737406a0c5c7a5259b144738cbe4a0b649d76" }
+serde_json = "1"
